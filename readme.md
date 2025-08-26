@@ -4,7 +4,7 @@
 
 ---
 
-## 🔥 Problem Statement (Upfront)
+## Problem Statement (Upfront)
 
 Modern MCP (Model Context Protocol) sessions are **request/response and tied to a live client connection**. That’s fine for human-paced lookups, but it breaks for **time-critical and order-critical enterprise workflows** spanning multiple systems.
 
@@ -96,6 +96,8 @@ sequenceDiagram
 }
 ```
 
+
+
 Partitioning key: ordering_key → strict per-key ordering.
 
 Deadlines/Cancel: end-to-end SLA and cancellation via control messages.
@@ -139,7 +141,7 @@ rules:
 ```
 
 
-**Adapter Playbook (Example)**
+##Adapter Playbook (Example)
 
 ```yaml
 # playbooks/mcp_git_clone_adapter.yml
@@ -174,7 +176,7 @@ rules:
           result: { path: "{{ dest }}" }
 ```
       
-**Broker Skeleton (FastAPI + aiokafka)**
+##Broker Skeleton (FastAPI + aiokafka)
 
 ```python
 # services/mcp_broker.py (skeletal)
@@ -245,7 +247,7 @@ async def post_progress(correlation_id: str, req: Request):
 
 
 
-**Security, Tenancy, Compliance**
+##Security, Tenancy, Compliance
 
 AuthN: OIDC/JWT to broker; mTLS to Kafka; AAP RBAC to job templates.
 
@@ -257,7 +259,7 @@ Audit: immutable event log + broker DB; correlate via correlation_id.
 
 PII/Data boundaries: scope envelopes to minimal required fields.
 
-**Observability**
+##Observability
 
 OpenTelemetry tracing (broker → Kafka → EDA → Controller → Adapter).
 
@@ -265,7 +267,7 @@ SLIs: p50/p95/p99 latency per tool; timeout rate; DLQ rate; queue depth.
 
 Dashboards: per-tenant throughput, deadline violations, retry storms.
 
-**Operational Semantics Gained**
+##Operational Semantics Gained
 
 Durability & replay of commands/results.
 
