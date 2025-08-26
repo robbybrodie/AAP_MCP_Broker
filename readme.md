@@ -4,7 +4,7 @@
 
 ---
 
-## Problem Statement (Upfront)
+## 🔥 Problem Statement (Upfront)
 
 Modern MCP (Model Context Protocol) sessions are **request/response and tied to a live client connection**. That’s fine for human-paced lookups, but it breaks for **time-critical and order-critical enterprise workflows** spanning multiple systems.
 
@@ -39,16 +39,22 @@ Modern MCP (Model Context Protocol) sessions are **request/response and tied to 
 
 ```mermaid
 flowchart LR
-    LLM[LLM Client<br/>(ChatGPT/Copilot)] -- MCP/SSE --> FEG[MCP Front-End Broker]
-    FEG -- produce --> K1[(Kafka/Redpanda<br/>mcp.commands)]
-    FEG <-- consume --> K2[(Kafka/Redpanda<br/>mcp.results)]
-    K1 --> EDA[AAP Event-Driven Ansible<br/>Rulebooks]
-    EDA --> CTRL[AAP Controller<br/>Execution Environments]
-    CTRL --> ADP[Adapters / Jobs<br/>(call MCP servers, HTTP, gRPC, CLI)]
+    LLM["LLM Client
+    (ChatGPT/Copilot)"] -- MCP/SSE --> FEG[MCP Front-End Broker]
+    FEG -- produce --> K1[("Kafka/Redpanda
+    mcp.commands")]
+    FEG <-- consume --> K2[("Kafka/Redpanda
+    mcp.results")]
+    K1 --> EDA["AAP Event-Driven Ansible
+    Rulebooks"]
+    EDA --> CTRL["AAP Controller
+    Execution Environments"]
+    CTRL --> ADP["Adapters / Jobs
+    (call MCP servers, HTTP, gRPC, CLI)"]
     ADP -- POST progress/result --> FEG
-    FEG -. audit/metrics .- OBS[OTel/Grafana/ELK]
-    FEG -. RBAC/Tenant .- IAM[OIDC/mTLS/RBAC]
-    K1 --> DLQ[(mcp.deadletter)]
+    FEG -. audit/metrics .- OBS["OTel/Grafana/ELK"]
+    FEG -. RBAC/Tenant .- IAM["OIDC/mTLS/RBAC"]
+    K1 --> DLQ[("mcp.deadletter")]
 ```
 ```mermaid
 sequenceDiagram
@@ -141,7 +147,7 @@ rules:
 ```
 
 
-##Adapter Playbook (Example)
+**Adapter Playbook (Example)**
 
 ```yaml
 # playbooks/mcp_git_clone_adapter.yml
@@ -176,7 +182,7 @@ rules:
           result: { path: "{{ dest }}" }
 ```
       
-##Broker Skeleton (FastAPI + aiokafka)
+**Broker Skeleton (FastAPI + aiokafka)**
 
 ```python
 # services/mcp_broker.py (skeletal)
@@ -247,36 +253,25 @@ async def post_progress(correlation_id: str, req: Request):
 
 
 
-##Security, Tenancy, Compliance
+**Security, Tenancy, Compliance**
 
-AuthN: OIDC/JWT to broker; mTLS to Kafka; AAP RBAC to job templates.
+- AuthN: OIDC/JWT to broker; mTLS to Kafka; AAP RBAC to job templates.
+- AuthZ: map tenant_id/user_id → allowed {tool,method}.
+- Secrets: Vault/KMS; never embed credentials in events.
+- Audit: immutable event log + broker DB; correlate via correlation_id.
+- PII/Data boundaries: scope envelopes to minimal required fields.
 
-AuthZ: map tenant_id/user_id → allowed {tool,method}.
+**Observability**
 
-Secrets: Vault/KMS; never embed credentials in events.
+- OpenTelemetry tracing (broker → Kafka → EDA → Controller → Adapter).
+- SLIs: p50/p95/p99 latency per tool; timeout rate; DLQ rate; queue depth.
+- Dashboards: per-tenant throughput, deadline violations, retry storms.
 
-Audit: immutable event log + broker DB; correlate via correlation_id.
+**Operational Semantics Gained**
 
-PII/Data boundaries: scope envelopes to minimal required fields.
-
-##Observability
-
-OpenTelemetry tracing (broker → Kafka → EDA → Controller → Adapter).
-
-SLIs: p50/p95/p99 latency per tool; timeout rate; DLQ rate; queue depth.
-
-Dashboards: per-tenant throughput, deadline violations, retry storms.
-
-##Operational Semantics Gained
-
-Durability & replay of commands/results.
-
-Strict per-key ordering via partitioning.
-
-Deadlines, cancellation, priority end-to-end.
-
-Idempotency & dedupe with DLQ isolation.
-
-Saga orchestration (workflows + compensation).
-
-Full audit & multi-tenant RBAC.
+- Durability & replay of commands/results.
+- Strict per-key ordering via partitioning.
+- Deadlines, cancellation, priority end-to-end.
+- Idempotency & dedupe with DLQ isolation.
+- Saga orchestration (workflows + compensation).
+- Full audit & multi-tenant RBAC.
