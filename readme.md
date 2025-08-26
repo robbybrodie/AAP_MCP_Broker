@@ -75,7 +75,7 @@ sequenceDiagram
 
 **Message Envelope (Transport Contract)**
 
-JSON
+```json
 {
   "envelope_version": "1.0",
   "correlation_id": "uuid-v7",
@@ -94,6 +94,7 @@ JSON
   "saga_step": 1,
   "compensation": { "tool": "git", "method": "delete", "args": { "repo": "..." } }
 }
+```
 
 Partitioning key: ordering_key → strict per-key ordering.
 
@@ -103,8 +104,7 @@ Idempotency: de-dupe at broker and adapter with idempotency_key.
 
 **EDA Rulebook (Kafka source → Job Template)**
 
-YAML
-
+```yaml
 # rulebooks/rulebook_mcp.yml
 ---
 sources:
@@ -136,12 +136,12 @@ rules:
           host: kafka-kafka-bootstrap:9092
           topic: mcp.deadletter
           value: "{{ event }}"
+```
 
 
 **Adapter Playbook (Example)**
 
-YAML
-
+```yaml
 # playbooks/mcp_git_clone_adapter.yml
 ---
 - name: Git clone adapter
@@ -172,11 +172,11 @@ YAML
         body:
           status: "ok"
           result: { path: "{{ dest }}" }
+```
       
-Broker Skeleton (FastAPI + aiokafka)
+**Broker Skeleton (FastAPI + aiokafka)**
 
-python
-
+```python
 # services/mcp_broker.py (skeletal)
 import asyncio, json, uuid, time
 from fastapi import FastAPI, Request
@@ -241,6 +241,7 @@ async def post_progress(correlation_id: str, req: Request):
     _ = await req.json()
     # Optionally push progress to connected MCP client via SSE/WebSocket
     return {"ok": True}
+```
 
 
 
@@ -277,4 +278,3 @@ Idempotency & dedupe with DLQ isolation.
 Saga orchestration (workflows + compensation).
 
 Full audit & multi-tenant RBAC.
-
