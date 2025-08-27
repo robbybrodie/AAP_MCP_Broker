@@ -81,6 +81,8 @@ sequenceDiagram
 
 **Message Envelope (Transport Contract)**
 
+The following shows a **sample message envelope** that demonstrates the transport contract between the MCP broker and downstream systems:
+
 ```json
 {
   "envelope_version": "1.0",
@@ -101,6 +103,58 @@ sequenceDiagram
   "compensation": { "tool": "git", "method": "delete", "args": { "repo": "..." } }
 }
 ```
+
+**Field → Guarantee Mapping**
+
+```mermaid
+flowchart LR
+    subgraph "Message Fields"
+        CID["correlation_id"]
+        IK["idempotency_key"]
+        OK["ordering_key"]
+        DL["deadline_ms"]
+        SID["saga_id"]
+        COMP["compensation"]
+        TID["tenant_id"]
+        PRI["priority"]
+    end
+    
+    subgraph "Enterprise Guarantees"
+        TRACE["🔍 End-to-End Traceability"]
+        EXACT["⚡ Exactly-Once Processing"]
+        SEQ["📋 Strict Ordering"]
+        SLA["⏰ SLA Enforcement"]
+        SAGA["🔄 Workflow Compensation"]
+        MULTI["🏢 Multi-Tenancy"]
+        QOS["🚀 Quality of Service"]
+    end
+    
+    CID --> TRACE
+    IK --> EXACT
+    OK --> SEQ
+    DL --> SLA
+    SID --> SAGA
+    COMP --> SAGA
+    TID --> MULTI
+    PRI --> QOS
+    
+    style TRACE fill:#e1f5fe
+    style EXACT fill:#f3e5f5
+    style SEQ fill:#e8f5e8
+    style SLA fill:#fff3e0
+    style SAGA fill:#fce4ec
+    style MULTI fill:#e3f2fd
+    style QOS fill:#f1f8e9
+```
+
+**Key Enterprise Benefits:**
+- **correlation_id** → Full request tracing across all systems
+- **idempotency_key** → Prevents duplicate operations on retries
+- **ordering_key** → Guarantees sequence (provision → configure → enable)
+- **deadline_ms** → Enforces SLA timeouts and cancellation
+- **saga_id + compensation** → Rollback failed multi-step workflows
+- **tenant_id** → Isolated processing per organization
+- **priority** → Critical operations get preferential treatment
 
 
 
